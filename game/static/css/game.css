@@ -1,2 +1,38 @@
-.ac_game_menu{
+.ac-game-menu{
+    width: 60%;
+    height: 90%;
+    background-image: url("/static/images/menu/background.jpg");
+    background-size: 100% 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    user-select: none;
+}
+
+.ac-game-menu-field{
+    width: 20vw;
+    position: relative;
+    top: 20vh;
+    left: 3.5vw;
+}
+
+.ac-game-menu-field-item{
+    height: 6vh;
+    width:15vw;
+    color: white;
+    font-size: 4vh;
+    font-style: italic;
+    margin: 2vh;
+    padding: 1vh;
+    text-align: center;
+    background-color: rgb(39,21,28,0.6);
+    border-radius: 30px;
+    letter-spacing: 0.3vw;
+    cursor: pointer;
+}
+.ac-game-menu-field-item:hover {
+    transform: scale(1.1);
+    transition: 400ms;
+
 }
