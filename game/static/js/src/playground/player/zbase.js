@@ -1,5 +1,5 @@
 class Player extends AcGameObject {
-    constructor(playground, x, y, radius, color, speed, is_me){
+    constructor(playground, x, y, radius, color, speed, fireball_speed, is_me){
         super();
         this.x = x;
         this.y = y;
@@ -16,9 +16,11 @@ class Player extends AcGameObject {
         this.color = color;
         this.origin_speed = speed;
         this.speed = speed;
+        this.fireball_speed = fireball_speed;
         this.is_me = is_me;
         this.eps = 0.1;
         this.move_length = 0;
+        this.stamp_time = 0;
         this.cur_skill = null;
     }
     start(){
@@ -49,13 +51,16 @@ class Player extends AcGameObject {
                 }
             }
         });
+        
+        if (outer.is_me){
 
-        $(window).keydown(function(e) {
-            if (e.which === 81){
-                outer.cur_skill = "fireball";
-                return false;
-            }
-        });
+            $(window).keydown(function(e) {
+                if (e.which === 81){
+                    outer.cur_skill = "fireball";
+                    return false;
+                }
+            });
+        }
     }
     shoot_fireball(tx, ty) {
         let ball_x = this.x, ball_y = this.y;
@@ -64,7 +69,7 @@ class Player extends AcGameObject {
         let ball_vx = Math.cos(ball_angle);
         let ball_vy = Math.sin(ball_angle);
         let ball_color = "orange";
-        let ball_speed = this.playground.height * 1;
+        let ball_speed = this.playground.height * this.fireball_speed;
         let ball_move_length = this.playground.height * 0.8;
         let ball_damage = 5;
         new FireBall(this.playground, this, ball_x, ball_y, ball_radius, ball_vx, ball_vy, ball_color, ball_speed, ball_move_length, ball_damage);
@@ -83,6 +88,19 @@ class Player extends AcGameObject {
         this.vy = Math.sin(angle);
     }
     is_attacked(angle, fireball){
+        //被撞击后粒子效果——————————————————————————————————————————————————————————————————————————-
+        for (let i = 0; i < 10 + parseInt(Math.random() * 5); i ++ ) {
+            let p_x = this.x;
+            let p_y = this.y;
+            let p_radius = this.radius * Math.random() * 0.25;
+            let p_angle = Math.PI * 2 * Math.random();
+            let p_vx = Math.cos(p_angle), p_vy = Math.sin(p_angle);
+            let p_color = this.color;
+            let p_speed = this.speed * 10 * Math.random();
+            let p_move_length = this.radius * Math.random() * 10;
+            new Particle(this.playground, p_x, p_y, p_radius, p_vx, p_vy, p_color, p_speed, p_move_length);
+        }
+        //————————————————————————————————————————————————————————————————————————————————————————————
         this.radius -= fireball.damage;
         if (this.radius <= 10) {
             this.destroy();
@@ -93,16 +111,21 @@ class Player extends AcGameObject {
         this.damage_y = Math.sin(angle);
         this.damage_speed = fireball.damage * 100;
 
-    }
 
+    }
     update(){
+        this.stamp_time += this.timedelta;
+        if (!this.is_me){
+            if (this.stamp_time > 5000 && Math.random() < 1 / 180.0) {
+                    this.shoot_fireball(this.playground.players[0].x, this.playground.players[0].y);
+                }
+        }
         if (this.damage_speed > this.eps){
             this.vx = this.vy = 0;
             this.move_length = 0;
             this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
             this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
             this.damage_speed *= this.friction;
-            console.log(this.damage_speed);
         } else{
             if (this.move_length < this.eps){
                 this.move_length = 0;
@@ -128,5 +151,12 @@ class Player extends AcGameObject {
         this.ctx.arc(this.x,this.y,this.radius,0,Math.PI*2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
+    }
+    on_destroy() {
+        for (let i = 0; i < this.playground.players.length; i ++ ){
+            if (this.playground.players[i] === this){
+                this.playground.players.splice(i, 1);
+            }
+        }
     }
 }

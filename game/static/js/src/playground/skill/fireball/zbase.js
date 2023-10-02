@@ -26,6 +26,7 @@ class FireBall extends AcGameObject {
         this.y += this.vy * moved;
         this.move_length -= moved;
         
+        
 
         for (let i = 0; i < this.playground.players.length; i ++ ) {
             let player = this.playground.players[i];
@@ -41,13 +42,14 @@ class FireBall extends AcGameObject {
         let dy = y1 - y2;
         return Math.sqrt(dx*dx + dy*dy);
     }
-    is_collision(player) {
-        let distance = this.get_dist(this.x, this.y, player.x, player.y);
-        if (distance < this.radius + player.radius) {
+    is_collision(obj) {
+        let distance = this.get_dist(this.x, this.y, obj.x, obj.y);
+        if (distance < this.radius + obj.radius) {
             return true;
         } else {
             return false;
         }
+
     }
     attack(player) {
         let angle = Math.atan2(player.y - this.y, player.x - this.x);
