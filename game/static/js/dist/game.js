@@ -16,6 +16,7 @@ class AcGameMenu {
     </div>
 </div>
 `)
+        this.$menu.hide();
         this.root.$ac_game.append(this.$menu);
         this.$single_mode = this.$menu.find('.ac-game-menu-field-item-single-mode');
         this.$multi_mode = this.$menu.find('.ac-game-menu-field-item-multi-mode');
@@ -434,10 +435,43 @@ class AcGamePlayground {
     }
 
 }
+class Settings {
+    constructor(root) {
+        this.root = root;
+        this.start();
+    }
+    start(){
+        this.getinfo();
+    }
+    register() {
+        
+    }
+    login() {
+        
+    }
+    getinfo() {
+        let outer = this;
+        $.ajax({
+            url: "http://8.134.174.213:8000/settings/getinfo/",
+            type: "GET",
+            data: {
+            },
+            success: function(reap) {
+                console.log(reap);
+                if (reap.result === "success") {
+                    outer.root.menu.show();
+                } else {
+                    outer.login();
+                }
+            }
+    })
+    }
+}
 export class AcGame {
         constructor(id) {
             this.id = id;
             this.$ac_game = $('#' + id);
+            this.settings = new Settings(this);
             this.menu = new AcGameMenu(this);
             this.playground;
         }
