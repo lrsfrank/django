@@ -169,7 +169,7 @@ class Player extends AcGameObject {
         this.damage_x = 0;
         this.damage_y = 0;
         this.damage_speed = 0;
-        this.friction = 0.9;
+        this.friction = 0.7;
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
         this.origin_radius = radius;
@@ -287,6 +287,9 @@ class Player extends AcGameObject {
             this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
             this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
             this.damage_speed *= this.friction;
+            if (this.is_me) {
+                console.log(this.damage_speed);
+            }
         } else{
             if (this.move_length < this.eps){
                 this.move_length = 0;
