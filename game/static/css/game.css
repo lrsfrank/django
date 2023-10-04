@@ -1,3 +1,110 @@
+.ac-game-settings{
+     width: 60%;
+     height: 90%;
+     background-image: url("/static/images/menu/background.jpg");
+     background-size: 100% 100%;
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     user-select: none;
+     border-radius: 50px;
+}
+.ac-game-settings-login {
+    height: 41vh;
+    width: 20vw;
+    position: relative;
+    top: 40%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+.ac-game-settings-login-title {
+    color: white;
+    font-size: 3vh;
+    text-align: center;
+    letter-spacing: 3px;
+    height: 7vh;
+    padding: 2vh;
+}
+.ac-game-settings-login-user {
+    margin: 0 auto;
+    width: 80%;
+    height: 45%;
+}
+.ac-game-settings-login-user-item {
+    height: 50%;
+    width: 100%;
+}
+.ac-game-settings-login-user-item > input {
+    width: 70%;
+    line-height: 4vh;
+    margin: 0 15%;
+    font-size: 1.8vh;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 5px;
+}
+.ac-game-settings-login-user-item > input::placeholder {
+    font-size: 2vh;
+    color: gray;
+}
+.ac-game-settings-login-user-submit{
+    height: 15%;
+    width: 56%;
+    margin: 0 22%;
+}
+.ac-game-settings-login-user-submit > button{
+    height: 80%;
+    width: 100%;
+    background-color: rgba(20, 200, 180);
+    font-size: 3vh;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    letter-spacing: 3px;
+}
+.ac-game-settings-error-messages {
+    color: red;
+    font-size: 1.3vh;
+    display: inline;
+    float: left;
+    padding-left: 40.3%;
+}
+.ac-game-settings-option {
+    font-size: 1.7vh;
+    color: white;
+    display: inline;
+    float: right;
+    padding-right: 2vw;
+    cursor: pointer;
+}
+.ac-game-settings-register {
+    height: 41vh;
+    width: 20vw;
+    position: relative;
+    top: 40%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+.ac-game-settings-register-user {
+    margin: 0 auto;
+    width: 80%;
+    height: 45%;
+}
+.ac-game-settings-register-user-item {
+    height: 30%;
+    width: 100%;
+}
+.ac-game-settings-register-user-item > input {
+    width: 70%;
+    line-height: 4vh;
+    margin: 0 15%;
+    font-size: 1.8vh;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 5px;
+}
 .ac-game-menu{
     width: 60%;
     height: 90%;
@@ -8,6 +115,7 @@
     left: 50%;
     transform: translate(-50%, -50%); 
     user-select: none;
+    border-radius: 50px;
 }
 
 .ac-game-menu-field{
@@ -46,3 +154,4 @@
     transform: translate(-50%, -50%);
 
 }
+
