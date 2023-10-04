@@ -479,6 +479,9 @@ class Settings {
         <div class="ac-game-settings-option">
             注册
         </div>
+        <div class="ac-game-settings-tips">
+            登录即代表您同意LRS是帅哥
+        </div>
     </div>
     <div class="ac-game-settings-register">
         <div class="ac-game-settings-login-title">
@@ -503,6 +506,9 @@ class Settings {
         </div>
         <div class="ac-game-settings-option">
             返回登录
+        </div>
+        <div class="ac-game-settings-tips">
+            登录即代表您同意LRS是帅哥
         </div>
     </div>
 </div>

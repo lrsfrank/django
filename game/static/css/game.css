@@ -79,6 +79,14 @@
     padding-right: 2vw;
     cursor: pointer;
 }
+.ac-game-settings-tips {
+    width: 56%;
+    font-size: 1.2vh;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-top: 2vh;
+    margin-left: 5.5vw;
+}
 .ac-game-settings-register {
     height: 41vh;
     width: 20vw;
