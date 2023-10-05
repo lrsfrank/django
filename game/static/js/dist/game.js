@@ -33,11 +33,11 @@ class AcGameMenu {
         let outer = this;
         this.$single_mode.click(function(){
             outer.hide();
-            outer.root.playground = new AcGamePlayground(outer.root);
-            outer.root.playground.show();
+            outer.root.playground.show("single mode");
         });
         this.$multi_mode.click(function(){
             outer.hide();
+            outer.root.playground.show("multi mode");
         });
         this.$setting.click(function(){
             outer.root.settings.logout_on_remote();
@@ -168,7 +168,7 @@ class Particle extends AcGameObject {
     }
 }
 class Player extends AcGameObject {
-    constructor(playground, x, y, radius, color, speed, fireball_speed, is_me){
+    constructor(playground, x, y, radius, color, speed, fireball_speed, character, username, photo){
         super();
         this.x = x;
         this.y = y;
@@ -186,19 +186,20 @@ class Player extends AcGameObject {
         this.origin_speed = speed;
         this.speed = speed;
         this.fireball_speed = fireball_speed;
-        this.is_me = is_me;
+        this.character = character;
         this.eps = 0.01;
         this.move_length = 0;
         this.stamp_time = 0;
         this.cur_skill = null;
-
-        if (this.is_me) {
+        this.username = username;
+        this.photo = photo;
+        if (this.character != "bot") {
             this.img = new Image();
-            this.img.src = this.playground.root.settings.photo;
+            this.img.src = this.photo;
         }
     }
     start(){
-        if (this.is_me) {
+        if (this.character === "me") {
             this.add_listening_events();
         } else {
             let tx = Math.random() * this.playground.width / this.playground.scale;
@@ -230,7 +231,7 @@ class Player extends AcGameObject {
             }
         });
         
-        if (outer.is_me){
+        if (outer.character === "me"){
 
             $(window).keydown(function(e) {
                 if (e.which === 81){
@@ -293,7 +294,7 @@ class Player extends AcGameObject {
     }
     update(){
         this.stamp_time += this.timedelta;
-        if (!this.is_me){
+        if (this.character === "bot"){
             if (this.stamp_time > 5000 && Math.random() < 1 / 180.0) {
                     this.shoot_fireball(this.playground.players[0].x, this.playground.players[0].y);
                 }
@@ -304,14 +305,11 @@ class Player extends AcGameObject {
             this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
             this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
             this.damage_speed *= this.friction;
-            if (this.is_me) {
-                console.log(this.damage_speed);
-            }
         } else{
             if (this.move_length < this.eps){
                 this.move_length = 0;
                 this.vx = this.vy = 0;
-                if (!this.is_me) {
+                if (this.character === "bot") {
                     let tx = Math.random() * this.playground.width / this.playground.scale;
                     let ty = Math.random();
                     this.move_to(tx, ty);
@@ -329,7 +327,7 @@ class Player extends AcGameObject {
     }
     render(){
         let scale = this.playground.scale;
-        if (this.is_me) {
+        if (this.character !== "bot") {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
@@ -436,15 +434,6 @@ class AcGamePlayground {
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
         this.root.$ac_game.append(this.$playground);
-        this.width = this.$playground.width();
-        this.height = this.$playground.height();
-        this.scale = this.height;
-        this.game_map = new GameMap(this);
-        this.players = [];
-        this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, true));
-        for (let i = 0; i < 5; i ++ ){
-            this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, this.get_random_color(), 0.15, 0.6, false));
-        }
         this.start();
 
     }
@@ -472,8 +461,21 @@ class AcGamePlayground {
         if (this.game_map) this.game_map.resize();
         console.log(this.players);
     }
-    show() {
+    show(mode) {
         this.$playground.show();
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        this.scale = this.height;
+        this.game_map = new GameMap(this);
+        this.players = [];
+        this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, "me", this.root.settings.username, this.root.settings.photo));
+        if (mode === "single mode") {
+            for (let i = 0; i < 5; i ++ ){
+                this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, this.get_random_color(), 0.15, 0.6, "bot"));
+            }
+        } else if (mode === "multi mode") {
+            
+        }
         this.resize();
     }
     hide() {
@@ -694,7 +696,7 @@ export class AcGame {
             this.$ac_game = $('#' + id);
             this.settings = new Settings(this);
             this.menu = new AcGameMenu(this);
-            this.playground;
+            this.playground = new AcGamePlayground(this);
         }
 }
 

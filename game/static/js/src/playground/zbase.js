@@ -3,15 +3,6 @@ class AcGamePlayground {
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
         this.root.$ac_game.append(this.$playground);
-        this.width = this.$playground.width();
-        this.height = this.$playground.height();
-        this.scale = this.height;
-        this.game_map = new GameMap(this);
-        this.players = [];
-        this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, true));
-        for (let i = 0; i < 5; i ++ ){
-            this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, this.get_random_color(), 0.15, 0.6, false));
-        }
         this.start();
 
     }
@@ -39,8 +30,21 @@ class AcGamePlayground {
         if (this.game_map) this.game_map.resize();
         console.log(this.players);
     }
-    show() {
+    show(mode) {
         this.$playground.show();
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        this.scale = this.height;
+        this.game_map = new GameMap(this);
+        this.players = [];
+        this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, "me", this.root.settings.username, this.root.settings.photo));
+        if (mode === "single mode") {
+            for (let i = 0; i < 5; i ++ ){
+                this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, this.get_random_color(), 0.15, 0.6, "bot"));
+            }
+        } else if (mode === "multi mode") {
+            
+        }
         this.resize();
     }
     hide() {

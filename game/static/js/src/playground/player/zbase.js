@@ -1,5 +1,5 @@
 class Player extends AcGameObject {
-    constructor(playground, x, y, radius, color, speed, fireball_speed, is_me){
+    constructor(playground, x, y, radius, color, speed, fireball_speed, character, username, photo){
         super();
         this.x = x;
         this.y = y;
@@ -17,19 +17,20 @@ class Player extends AcGameObject {
         this.origin_speed = speed;
         this.speed = speed;
         this.fireball_speed = fireball_speed;
-        this.is_me = is_me;
+        this.character = character;
         this.eps = 0.01;
         this.move_length = 0;
         this.stamp_time = 0;
         this.cur_skill = null;
-
-        if (this.is_me) {
+        this.username = username;
+        this.photo = photo;
+        if (this.character != "bot") {
             this.img = new Image();
-            this.img.src = this.playground.root.settings.photo;
+            this.img.src = this.photo;
         }
     }
     start(){
-        if (this.is_me) {
+        if (this.character === "me") {
             this.add_listening_events();
         } else {
             let tx = Math.random() * this.playground.width / this.playground.scale;
@@ -61,7 +62,7 @@ class Player extends AcGameObject {
             }
         });
         
-        if (outer.is_me){
+        if (outer.character === "me"){
 
             $(window).keydown(function(e) {
                 if (e.which === 81){
@@ -124,7 +125,7 @@ class Player extends AcGameObject {
     }
     update(){
         this.stamp_time += this.timedelta;
-        if (!this.is_me){
+        if (this.character === "bot"){
             if (this.stamp_time > 5000 && Math.random() < 1 / 180.0) {
                     this.shoot_fireball(this.playground.players[0].x, this.playground.players[0].y);
                 }
@@ -135,14 +136,11 @@ class Player extends AcGameObject {
             this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
             this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
             this.damage_speed *= this.friction;
-            if (this.is_me) {
-                console.log(this.damage_speed);
-            }
         } else{
             if (this.move_length < this.eps){
                 this.move_length = 0;
                 this.vx = this.vy = 0;
-                if (!this.is_me) {
+                if (this.character === "bot") {
                     let tx = Math.random() * this.playground.width / this.playground.scale;
                     let ty = Math.random();
                     this.move_to(tx, ty);
@@ -160,7 +158,7 @@ class Player extends AcGameObject {
     }
     render(){
         let scale = this.playground.scale;
-        if (this.is_me) {
+        if (this.character !== "bot") {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);

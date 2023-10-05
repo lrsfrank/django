@@ -4,7 +4,7 @@ export class AcGame {
             this.$ac_game = $('#' + id);
             this.settings = new Settings(this);
             this.menu = new AcGameMenu(this);
-            this.playground;
+            this.playground = new AcGamePlayground(this);
         }
 }
 
