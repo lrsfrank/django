@@ -69,7 +69,8 @@
     font-size: 1.3vh;
     display: inline;
     float: left;
-    padding-left: 40.3%;
+    margin-left: 25.3%;
+    text-align: left;
 }
 .ac-game-settings-option {
     font-size: 1.7vh;
@@ -86,6 +87,9 @@
     text-align: center;
     margin-top: 2vh;
     margin-left: 5.5vw;
+}
+.ac-game-settings-login-tips {
+    margin-left: 4.5vw;
 }
 .ac-game-settings-register {
     height: 41vh;
@@ -112,6 +116,22 @@
     font-size: 1.8vh;
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 5px;
+}
+.ac-game-settings-register-user-submit {
+    height: 15%;
+    width: 56%;
+    margin: 0 22%;
+}
+.ac-game-settings-register-user-submit > button {
+    height: 80%;
+    width: 100%;
+    background-color: rgba(20, 200, 180);
+    font-size: 3vh;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    letter-spacing: 3px;
 }
 .ac-game-menu{
     width: 60%;
