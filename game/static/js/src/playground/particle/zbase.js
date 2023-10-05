@@ -11,7 +11,7 @@ class Particle extends AcGameObject {
         this.color = color;
         this.speed = speed;
         this.friction = 0.85;
-        this.eps = 0.1;
+        this.eps = 0.01;
         this.move_length = move_length;
         this.alpha = 0.9;
     }
@@ -30,8 +30,9 @@ class Particle extends AcGameObject {
         this.render();
     }
     render(){
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.color = getColorRGBA(this.color, this.alpha);
         this.alpha -= Math.random() * 0.02;
         this.ctx.fillStyle = this.color;

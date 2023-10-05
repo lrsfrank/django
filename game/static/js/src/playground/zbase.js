@@ -5,11 +5,12 @@ class AcGamePlayground {
         this.root.$ac_game.append(this.$playground);
         this.width = this.$playground.width();
         this.height = this.$playground.height();
+        this.scale = this.height;
         this.game_map = new GameMap(this);
         this.players = [];
-        this.players.push(new Player(this, this.width/2, this.height/2, this.height * 0.05, "white", this.height * 0.20, 1, true));
+        this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, true));
         for (let i = 0; i < 5; i ++ ){
-            this.players.push(new Player(this, this.width/(i + 2), this.height/(i + 2), this.height * 0.05, this.get_random_color(), this.height * 0.15, 0.6, false));
+            this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, this.get_random_color(), 0.15, 0.6, false));
         }
         this.start();
 
@@ -21,10 +22,26 @@ class AcGamePlayground {
 
     start() {
         this.hide();
+        let outer = this;
+        $(window).resize(function() {
+            outer.resize();
+        });
     }
+    resize() {
+        console.log("resize");
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        let unit = Math.min(this.width / 16, this.height / 9);
+        this.width = unit * 16;
+        this.height = unit * 9;
+        this.scale = this.height;
 
+        if (this.game_map) this.game_map.resize();
+        console.log(this.players);
+    }
     show() {
         this.$playground.show();
+        this.resize();
     }
     hide() {
         this.$playground.hide();
