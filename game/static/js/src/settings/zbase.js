@@ -124,7 +124,6 @@ class Settings {
                 password: password,
             },
             success: function(resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -148,7 +147,6 @@ class Settings {
                 password_confirm: password_confirm,
             },
             success: function(resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -184,7 +182,6 @@ class Settings {
             data: {
             },
             success: function(reap) {
-                console.log(reap);
                 if (reap.result === "success") {
                     outer.username = reap.username;
                     outer.photo = reap.photo;

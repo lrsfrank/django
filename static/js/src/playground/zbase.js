@@ -2,9 +2,8 @@ class AcGamePlayground {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
-        this.root.$ac_game.append(this.$playground);
         this.start();
-
+        
     }
     get_random_color(){
         let colors = ["blue", "red", "green", "pink", "grey", "lightblue"];
@@ -13,6 +12,7 @@ class AcGamePlayground {
 
     start() {
         this.hide();
+        this.root.$ac_game.append(this.$playground);
         let outer = this;
         $(window).resize(function() {
             outer.resize();
@@ -25,15 +25,15 @@ class AcGamePlayground {
         this.width = unit * 16;
         this.height = unit * 9;
         this.scale = this.height;
-
         if (this.game_map) this.game_map.resize();
     }
     show(mode) {
+        this.mode = mode;
         this.$playground.show();
         this.width = this.$playground.width();
         this.height = this.$playground.height();
-        this.scale = this.height;
         this.game_map = new GameMap(this);
+        this.resize();
         this.players = [];
         this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, "me", this.root.settings.username, this.root.settings.photo));
         if (mode === "single mode") {
@@ -42,13 +42,12 @@ class AcGamePlayground {
             }
         } else if (mode === "multi mode") {
             let outer = this;
-            this.mps = new MultiPlayerSocket(this);
+            this.mps = new MultiPlayerSocket(outer);
             this.mps.uuid = this.players[0].uuid;
             this.mps.ws.onopen = function() {
                 outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             }
         }
-        this.resize();
     }
     hide() {
         this.$playground.hide();

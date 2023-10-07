@@ -209,7 +209,7 @@ class Player extends AcGameObject {
     start(){
         if (this.character === "me") {
             this.add_listening_events();
-        } else {
+        } else if (this.character === "bot") {
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random();
             this.move_to(tx, ty);
@@ -226,7 +226,12 @@ class Player extends AcGameObject {
         this.playground.game_map.$canvas.mousedown(function(e) {
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
+                let tx = (e.clientX - rect.left) / outer.playground.scale, ty = (e.clientY - rect.top) / outer.playground.scale;
+                
                 outer.move_to((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_move_to(tx, ty);
+                }
                 if (outer.cur_skill === "fireball") {
                      outer.shoot_fireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
                      outer.cur_skill = null;
@@ -428,17 +433,28 @@ class FireBall extends AcGameObject {
 class MultiPlayerSocket {
     constructor(playground) {
         this.playground = playground;
-
         this.ws = new WebSocket("wss://app6083.acapp.acwing.com.cn/wss/multiplayer/");
+        
+        console.log(this.playground.height);
         this.start();
 }
     start(){
         this.receive();
     }
     receive(){
+        let outer = this;
         this.ws.onmessage = function(e){
             let data = JSON.parse(e.data);
-            console.log(data);
+            let uuid = data.uuid;
+            if (uuid === outer.uuid) return false;
+
+            let event = data.event;
+            if (event === "create_player") {
+                outer.receive_create_player(uuid, data.username, data.photo);
+            } else if (event === "move_to") {
+                outer.receive_move_to(uuid, data.tx, data.ty);
+            }
+
         };
     }
     send_create_player(username, photo){
@@ -450,7 +466,50 @@ class MultiPlayerSocket {
             'photo': photo,
         }));
     }
-    receive_create_player(){
+    get_player(uuid) {
+        let players = this.playground.players;
+        for (let i = 0; i < players.length; i ++ )
+        {
+            let player = players[i];
+            if (player.uuid === uuid){
+                return player;
+            }
+        }
+            return null;
+    }
+    receive_create_player(uuid, username, photo){
+        let outer = this;
+        let player = new Player(
+            outer.playground,
+            outer.playground.width/2/outer.playground.height,
+            0.5,
+            0.05,
+            "white",
+            0.20,
+            1,
+            "enemy",
+            username,
+            photo
+        );
+        player.uuid = uuid;
+        outer.playground.players.push(player);
+    }
+
+    send_move_to(tx, ty) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "move_to",
+            'uuid': outer.uuid,
+            'tx': tx,
+            'ty': ty,
+        }));
+    }
+    
+    receive_move_to(uuid, tx, ty){
+        let player = this.get_player(uuid);
+        if (player) {
+            player.move_to(tx, ty);
+        }
     }
 }
 function getColorRGBA(color, alpha) {
@@ -469,9 +528,8 @@ class AcGamePlayground {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
-        this.root.$ac_game.append(this.$playground);
         this.start();
-
+        
     }
     get_random_color(){
         let colors = ["blue", "red", "green", "pink", "grey", "lightblue"];
@@ -480,6 +538,7 @@ class AcGamePlayground {
 
     start() {
         this.hide();
+        this.root.$ac_game.append(this.$playground);
         let outer = this;
         $(window).resize(function() {
             outer.resize();
@@ -492,15 +551,15 @@ class AcGamePlayground {
         this.width = unit * 16;
         this.height = unit * 9;
         this.scale = this.height;
-
         if (this.game_map) this.game_map.resize();
     }
     show(mode) {
+        this.mode = mode;
         this.$playground.show();
         this.width = this.$playground.width();
         this.height = this.$playground.height();
-        this.scale = this.height;
         this.game_map = new GameMap(this);
+        this.resize();
         this.players = [];
         this.players.push(new Player(this, this.width/2/this.scale, 0.5, 0.05, "white", 0.20, 1, "me", this.root.settings.username, this.root.settings.photo));
         if (mode === "single mode") {
@@ -509,13 +568,12 @@ class AcGamePlayground {
             }
         } else if (mode === "multi mode") {
             let outer = this;
-            this.mps = new MultiPlayerSocket(this);
+            this.mps = new MultiPlayerSocket(outer);
             this.mps.uuid = this.players[0].uuid;
             this.mps.ws.onopen = function() {
                 outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             }
         }
-        this.resize();
     }
     hide() {
         this.$playground.hide();
@@ -648,7 +706,6 @@ class Settings {
                 password: password,
             },
             success: function(resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -672,7 +729,6 @@ class Settings {
                 password_confirm: password_confirm,
             },
             success: function(resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -708,7 +764,6 @@ class Settings {
             data: {
             },
             success: function(reap) {
-                console.log(reap);
                 if (reap.result === "success") {
                     outer.username = reap.username;
                     outer.photo = reap.photo;

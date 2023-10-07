@@ -32,7 +32,7 @@ class Player extends AcGameObject {
     start(){
         if (this.character === "me") {
             this.add_listening_events();
-        } else {
+        } else if (this.character === "bot") {
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random();
             this.move_to(tx, ty);
@@ -49,7 +49,12 @@ class Player extends AcGameObject {
         this.playground.game_map.$canvas.mousedown(function(e) {
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
+                let tx = (e.clientX - rect.left) / outer.playground.scale, ty = (e.clientY - rect.top) / outer.playground.scale;
+                
                 outer.move_to((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_move_to(tx, ty);
+                }
                 if (outer.cur_skill === "fireball") {
                      outer.shoot_fireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
                      outer.cur_skill = null;
