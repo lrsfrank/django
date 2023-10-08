@@ -45,6 +45,7 @@ class AcGamePlayground {
             }
         } else if (mode === "multi mode") {
             let outer = this;
+            this.chat_field = new ChatField(outer);
             this.mps = new MultiPlayerSocket(outer);
             this.mps.uuid = this.players[0].uuid;
             this.mps.ws.onopen = function() {
