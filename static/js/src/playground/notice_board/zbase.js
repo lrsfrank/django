@@ -21,6 +21,8 @@ class NoticeBoard extends AcGameObject {
         if (this.playground.player_count <= 1 && this.playground.state === "fighting"){
             this.render_gameover();
             if (!this.gameover){
+                var audio = new Audio('/static/sounds/gameover.wav');
+                audio.play();
                 setTimeout(function(){
                     location.reload();
                 }, 3000);

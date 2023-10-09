@@ -13,6 +13,9 @@ class AcGameMenu {
         <div class="ac-game-menu-field-item ac-game-menu-field-item-setting">
         退出登录
         </div>
+        <div class="ac-game-menu-field-item ac-game-menu-bgm">
+        背景音乐:关
+        </div>
     </div>
 </div>
 `)
@@ -21,8 +24,10 @@ class AcGameMenu {
         this.$single_mode = this.$menu.find('.ac-game-menu-field-item-single-mode');
         this.$multi_mode = this.$menu.find('.ac-game-menu-field-item-multi-mode');
         this.$setting = this.$menu.find('.ac-game-menu-field-item-setting');
-
+        this.$bgm = this.$menu.find('.ac-game-menu-bgm');
+        this.has_bgm = false;
         this.start();
+        
     }
 
     start() {
@@ -32,16 +37,48 @@ class AcGameMenu {
     add_listening_events() {
         let outer = this;
         this.$single_mode.click(function(){
+            if (outer.has_bgm){
+                outer.bgm.pause();
+                outer.bgm.currentTime = 0; // 将播放位置重置为起始位置
+                outer.bgm.src = ""; // 关闭音频
+            }
             outer.hide();
             outer.root.playground.show("single mode");
         });
         this.$multi_mode.click(function(){
+            if (outer.has_bgm){
+                outer.bgm.pause();
+                outer.bgm.currentTime = 0; // 将播放位置重置为起始位置
+                outer.bgm.src= ""; // 关闭音频
+            }
             outer.hide();
             outer.root.playground.show("multi mode");
         });
         this.$setting.click(function(){
+            if (outer.has_bgm){
+                outer.bgm.pause();
+                outer.currentTime = 0; // 将播放位置重置为起始位置
+                outer.src = ""; // 关闭音频
+            }
             outer.root.settings.logout_on_remote();
         });
+        this.$bgm.click(function(){
+            if (!outer.has_bgm){
+                outer.bgm = new Audio('/static/sounds/bgm_menu.mp3');
+                outer.bgm.play();
+                outer.$bgm.text('背景音乐:开');
+                outer.has_bgm = true;
+                return false;
+            }
+            if (outer.has_bgm){
+                outer.bgm.pause();
+                outer.currentTime = 0;
+                outer.src = "";
+                outer.$bgm.text('背景音乐:关');
+                outer.has_bgm = false;
+                return false;
+            }
+        })
     }
 
     show() {
@@ -227,6 +264,8 @@ class NoticeBoard extends AcGameObject {
         if (this.playground.player_count <= 1 && this.playground.state === "fighting"){
             this.render_gameover();
             if (!this.gameover){
+                var audio = new Audio('/static/sounds/gameover.wav');
+                audio.play();
                 setTimeout(function(){
                     location.reload();
                 }, 3000);
@@ -493,6 +532,10 @@ class Player extends AcGameObject {
         let fireball = new FireBall(this.playground, this, ball_x, ball_y, ball_radius, ball_vx, ball_vy, ball_color, ball_speed, ball_move_length, ball_damage);
         this.fireballs.push(fireball);
         this.fireball_coldtime = 1;
+
+        var audio = new Audio('/static/sounds/射击.wav');
+        audio.play();
+
         return fireball;
     }
     destroy_fireball(uuid){
@@ -525,6 +568,11 @@ class Player extends AcGameObject {
         color = "rgb(255,255,255)";
         this.flash_light(this.x, this.y, color, 20, 0.15);
         //--------------------------------------------------------
+        
+        
+        //音效
+        var audio = new Audio('static/sounds/guidaoyikai.wav');
+        audio.play();
     }
     flash_light(x, y, color, num, radius){
         for (let i = 0; i < num + parseInt(Math.random() * 5); i ++ ) {

@@ -202,6 +202,10 @@ class Player extends AcGameObject {
         let fireball = new FireBall(this.playground, this, ball_x, ball_y, ball_radius, ball_vx, ball_vy, ball_color, ball_speed, ball_move_length, ball_damage);
         this.fireballs.push(fireball);
         this.fireball_coldtime = 1;
+
+        var audio = new Audio('/static/sounds/射击.wav');
+        audio.play();
+
         return fireball;
     }
     destroy_fireball(uuid){
@@ -234,6 +238,11 @@ class Player extends AcGameObject {
         color = "rgb(255,255,255)";
         this.flash_light(this.x, this.y, color, 20, 0.15);
         //--------------------------------------------------------
+        
+        
+        //音效
+        var audio = new Audio('static/sounds/guidaoyikai.wav');
+        audio.play();
     }
     flash_light(x, y, color, num, radius){
         for (let i = 0; i < num + parseInt(Math.random() * 5); i ++ ) {
