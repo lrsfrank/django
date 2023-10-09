@@ -11,7 +11,7 @@ class AcGameMenu {
         多人模式
         </div>
         <div class="ac-game-menu-field-item ac-game-menu-field-item-setting">
-        设置
+        退出登录
         </div>
     </div>
 </div>

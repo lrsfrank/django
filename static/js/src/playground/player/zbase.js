@@ -40,11 +40,11 @@ class Player extends AcGameObject {
             this.fireball_cdscale = 3;
             this.fireball_coldtime = 3; //秒
             this.fireball_img = new Image();
-            this.fireball_img.src = "https://pic.rmb.bdstatic.com/mvideo/33757958919bb37e44697e656df0f589.jpg";
+            this.fireball_img.src = "https://img-qn.51miz.com/2017/06/21/14/2017062114434615_P836724_82a909a8O.jpg";
 
             this.flash_coldtime = 10;
             this.flash_img = new Image();
-            this.flash_img.src = "https://i2.hdslb.com/bfs/face/762316a326f89b6bbdb291232bce5a8fa67e0a9b.jpg@240w_240h_1c_1s_!web-avatar-space-header.avif";
+            this.flash_img.src = "https://cdn.acwing.com/media/article/image/2021/12/02/1_daccabdc53-blink.png";
         }
     }
     start(){
@@ -112,7 +112,7 @@ class Player extends AcGameObject {
                     outer.cur_skill = null;
 
                 }*/
-            } else if (e.which === 1) {
+            } /*else if (e.which === 1) {
                 let tx = (e.clientX - rect.left) / outer.playground.scale, ty = (e.clientY - rect.top) / outer.playground.scale;
                 if (outer.cur_skill === "fireball") {
                     if (outer.fireball_coldtime > outer.eps){
@@ -132,7 +132,7 @@ class Player extends AcGameObject {
                         outer.playground.mps.send_flash(tx, ty);
                     }
                 }
-            }
+            }*/
         });
 
         this.playground.game_map.$canvas.keydown(function(e) {
@@ -201,7 +201,7 @@ class Player extends AcGameObject {
         let ball_damage = 0.01;
         let fireball = new FireBall(this.playground, this, ball_x, ball_y, ball_radius, ball_vx, ball_vy, ball_color, ball_speed, ball_move_length, ball_damage);
         this.fireballs.push(fireball);
-        this.fireball_coldtime = 0.3;
+        this.fireball_coldtime = 1;
         return fireball;
     }
     destroy_fireball(uuid){
@@ -214,6 +214,13 @@ class Player extends AcGameObject {
         }
     }
     flash(tx, ty) {
+        //闪现前的特效--------------------------------------------
+        let color = "rgb(255,255,0)";
+        this.flash_light(this.x, this.y, color, 15, 0.15);
+        color = "rgb(255,255,255)";
+        this.flash_light(this.x, this.y, color, 20, 0.15);
+
+        //--------------------------------------------------------
         let d = this.get_dist(this.x, this.y, tx, ty);
         d = Math.min(d, 0.4);
         let angle = Math.atan2(ty - this.y, tx - this.x);
@@ -221,6 +228,25 @@ class Player extends AcGameObject {
         this.y += d * Math.sin(angle);
         this.flash_coldtime = 10;
         this.move_length = 0; //flash后不动
+        //闪现后的特效--------------------------------------------
+        color = "rgb(255,255,0)";
+        this.flash_light(this.x, this.y, color, 15, 0.15);
+        color = "rgb(255,255,255)";
+        this.flash_light(this.x, this.y, color, 20, 0.15);
+        //--------------------------------------------------------
+    }
+    flash_light(x, y, color, num, radius){
+        for (let i = 0; i < num + parseInt(Math.random() * 5); i ++ ) {
+            let p_x = x;
+            let p_y = y;
+            let p_radius = this.radius * Math.random() * radius;
+            let p_angle = Math.PI * 2 * Math.random();
+            let p_vx = Math.cos(p_angle), p_vy = Math.sin(p_angle);
+            let p_color = color;
+            let p_speed = this.speed * 10 * Math.random();
+            let p_move_length = this.radius * Math.random() * 3;
+            new Particle(this.playground, p_x, p_y, p_radius, p_vx, p_vy, p_color, p_speed, p_move_length);
+        }
     }
     get_dist(x1, y1, x2, y2){
         let dx = x1 - x2;
@@ -352,7 +378,7 @@ class Player extends AcGameObject {
         //火球
         let x = 1.5, y = 0.9, r = 0.04;
         if (this.fireball_coldtime === 0){
-            this.fireball_cdscale = 0.3
+            this.fireball_cdscale = 1;
         }
         this.ctx.save();
         this.ctx.beginPath();
@@ -394,9 +420,6 @@ class Player extends AcGameObject {
     }
     on_destroy() {
         this.playground.player_count -- ;
-        if (this.playground.player_count <= 1){
-            this.playground.state = "over";
-        }
         for (let i = 0; i < this.playground.players.length; i ++ ){
             if (this.playground.players[i] === this){
                 this.playground.players.splice(i, 1);
