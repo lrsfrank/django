@@ -31,10 +31,17 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         print('disconnect')
+        players = cache.get(self.room_name)
+        for player in players:
+            if player['uuid'] == self.uuid:
+                players.remove(player)
+                break
+        cache.set(self.room_name, players, 3600);
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
     
     async def create_player(self, data):
         players = cache.get(self.room_name)
+        self.uuid = data['uuid']
         players.append({
             'uuid': data['uuid'],
             'username': data['username'],
