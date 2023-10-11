@@ -52,6 +52,10 @@ class AcGamePlayground {
                 outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             }
         }
+        
+        this.bgm = new Audio('/static/sounds/playground/bgm.mp3');
+        this.bgm.loop = true;
+        this.bgm.play();
     }
     hide() {
         this.$playground.hide();

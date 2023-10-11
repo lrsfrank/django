@@ -3,7 +3,6 @@ class MultiPlayerSocket {
         this.playground = playground;
         this.ws = new WebSocket("wss://app6083.acapp.acwing.com.cn/wss/multiplayer/");
         
-        console.log(this.playground.height);
         this.start();
 }
     start(){
@@ -29,6 +28,8 @@ class MultiPlayerSocket {
                 outer.receive_flash(uuid, data.tx, data.ty);
             } else if (event === "chat"){
                 outer.receive_chat(data.username, data.text);
+            } else if (event === "stop_move"){
+                outer.receive_stop_move(uuid);
             }
         };
     }
@@ -100,7 +101,6 @@ class MultiPlayerSocket {
     receive_shoot_fireball(uuid, tx, ty, ball_uuid){
         let player = this.get_player(uuid);
         if (player){
-            console.log("敌人发射火球");
             let fireball = player.shoot_fireball(tx, ty);
             fireball.uuid = ball_uuid;
         }
@@ -154,5 +154,16 @@ class MultiPlayerSocket {
     receive_chat(username, text)
     {
         this.playground.chat_field.add_message(username, text);
+    }
+    send_stop_move(){
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "stop_move",
+            'uuid': outer.uuid
+        }));
+    }
+    receive_stop_move(uuid){
+        let player = this.get_player(uuid);
+        player.stop_move();
     }
 }

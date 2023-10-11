@@ -18,11 +18,12 @@ class Player extends AcGameObject {
         this.speed = speed;
         this.fireball_speed = fireball_speed;
         this.fireballs = [];
+        //this.arrow;
         this.character = character;
         this.eps = 0.01;
         this.move_length = 0;
         this.stamp_time = 0;
-        this.cur_skill = null;
+        this.cur_skill = [false, false]; //0是fireball, 1是flash
         this.username = username;
         this.photo = photo;
 
@@ -45,6 +46,10 @@ class Player extends AcGameObject {
             this.flash_coldtime = 10;
             this.flash_img = new Image();
             this.flash_img.src = "https://cdn.acwing.com/media/article/image/2021/12/02/1_daccabdc53-blink.png";
+
+            this.arrow_coldtime = 0;
+            this.E_is_down = false;
+
         }
     }
     start(){
@@ -53,7 +58,7 @@ class Player extends AcGameObject {
 
         if (this.playground.player_count >= 2) {
             this.playground.state = "fighting";
-            this.playground.notice_board.write("你们不要再打啦！");
+            this.playground.notice_board.write("您已到达战场，加油特种兵");
         }
         if (this.character === "me") {
             this.add_listening_events();
@@ -156,37 +161,73 @@ class Player extends AcGameObject {
                     return true;
                 }
 
-                outer.cur_skill = "fireball";
+                let fireball = outer.shoot_fireball(outer.mouse_x, outer.mouse_y);
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_shoot_fireball(outer.mouse_x, outer.mouse_y, fireball.uuid);
+                }
 
-                if (outer.keys.length > 0){
+                /*if (outer.keys.length > 0){
                     let key = outer.keys.pop();
                     if (key['key'] === 3){
                         let fireball = outer.shoot_fireball(key['tx'], key['ty']);
                         if (outer.playground.mode === "multi mode"){
                             outer.playground.mps.send_shoot_fireball(key['tx'], key['ty'], fireball.uuid);
                         }
-                        outer.cur_skill = null;
+                        outer.cur_skill[0] = false;
                     }
-                }
+                }*/
 
                 return false;
             } else if (e.which === 70){
                 if (outer.flash_coldtime > outer.eps){
                     return true;
                 }
-                outer.cur_skill = "flash";
-                if (outer.keys.length > 0){
+                outer.flash(outer.mouse_x, outer.mouse_y);
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_flash(outer.mouse_x, outer.mouse_y);
+                }
+                /*if (outer.keys.length > 0){
                     let key = outer.keys.pop();
                     if (key['key'] === 3){
                         outer.flash(key['tx'], key['ty']);
                         if (outer.playground.mode === "multi mode"){
                             outer.playground.mps.send_flash(key['tx'], key['ty']);
                         }
-                        outer.cur_skill = null;
+                        outer.cur_skill[1] = false;
                     }
-                }
+                }*/
                 return false;
+            } else if (e.which === 83){
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_stop_move();
+                }
+                outer.stop_move();
+                return false;
+            } else if (e.which === 69){
+                if (outer.arrow_coldtime > outer.eps){
+                    return true;
+                }
+                if (outer.E_is_down === false){
+                   outer.E_start_time = new Date().getTime();
+                }
+                outer.E_is_down = true;
             }
+            
+            
+        });
+        this.playground.game_map.$canvas.keyup(function(e){
+            if (e.which === 69){
+                outer.E_is_down = false;
+                outer.E_end_time = new Date().getTime();
+                let E_time = (outer.E_end_time - outer.E_start_time) / 1000;
+                let power = Math.min(3, E_time);
+                outer.shoot_arrow(outer.mouse_x, outer.mouse_y, power);
+            }
+        });
+        this.playground.game_map.$canvas.mousemove(function(e){
+            const rect = outer.ctx.canvas.getBoundingClientRect();
+            outer.mouse_x = (e.clientX - rect.left) / outer.playground.scale;
+            outer.mouse_y = (e.clientY - rect.top) / outer.playground.scale;
         });
     }
     shoot_fireball(tx, ty) {
@@ -203,7 +244,7 @@ class Player extends AcGameObject {
         this.fireballs.push(fireball);
         this.fireball_coldtime = 1;
 
-        var audio = new Audio('/static/sounds/射击.wav');
+        var audio = new Audio('/static/sounds/playground/shoot.wav');
         audio.play();
 
         return fireball;
@@ -217,12 +258,30 @@ class Player extends AcGameObject {
             }
         }
     }
+    shoot_arrow(tx, ty, power){
+        let arrow_x = this.x, arrow_y = this.y;
+        let arrow_radius = 0.01 + power / 300;
+        let arrow_angle = Math.atan2(ty - arrow_y, tx - arrow_x);
+        let arrow_vx = Math.cos(arrow_angle);
+        let arrow_vy = Math.sin(arrow_angle);
+        let arrow_speed = 0.8 + power/3;
+        let arrow_move_length = 0.7 + power * 0.2;
+        let arrow_damage = 0.01 + power / 100;
+        let arrow_transparency = 255 - parseInt(50 * power);
+        this.arrow = new Arrow(this.playground, this, arrow_x, arrow_y, arrow_radius, arrow_vx, arrow_vy, arrow_speed, arrow_move_length, arrow_damage, arrow_transparency);
+        this.arrow_coldtime = 0;
+
+        //var audio = new Audio('/static/sounds/playground/shoot.wav');
+        //audio.play();
+
+        return this.arrow;
+    }
     flash(tx, ty) {
         //闪现前的特效--------------------------------------------
         let color = "rgb(255,255,0)";
-        this.flash_light(this.x, this.y, color, 15, 0.15);
+        this.flash_light(this.x, this.y, color, 5, 0.2);
         color = "rgb(255,255,255)";
-        this.flash_light(this.x, this.y, color, 20, 0.15);
+        this.flash_light(this.x, this.y, color, 5, 0.2);
 
         //--------------------------------------------------------
         let d = this.get_dist(this.x, this.y, tx, ty);
@@ -231,17 +290,19 @@ class Player extends AcGameObject {
         this.x += d * Math.cos(angle);
         this.y += d * Math.sin(angle);
         this.flash_coldtime = 10;
+        this.fireball_coldtime = 0;
         this.move_length = 0; //flash后不动
         //闪现后的特效--------------------------------------------
         color = "rgb(255,255,0)";
-        this.flash_light(this.x, this.y, color, 15, 0.15);
+        this.flash_light(this.x, this.y, color, 5, 0.2);
         color = "rgb(255,255,255)";
-        this.flash_light(this.x, this.y, color, 20, 0.15);
+        this.flash_light(this.x, this.y, color, 5, 0.2);
         //--------------------------------------------------------
-        
-        
+
+
         //音效
-        var audio = new Audio('static/sounds/guidaoyikai.wav');
+        var audio = new Audio('static/sounds/playground/guidaoyikai.wav');
+        audio.volume = 0.6;
         audio.play();
     }
     flash_light(x, y, color, num, radius){
@@ -256,6 +317,13 @@ class Player extends AcGameObject {
             let p_move_length = this.radius * Math.random() * 3;
             new Particle(this.playground, p_x, p_y, p_radius, p_vx, p_vy, p_color, p_speed, p_move_length);
         }
+    }
+
+    quick_shot(){
+
+    }
+    stop_move(){
+        this.move_length = 0;
     }
     get_dist(x1, y1, x2, y2){
         let dx = x1 - x2;
@@ -305,6 +373,7 @@ class Player extends AcGameObject {
     receive_attack(x, y, angle, damage, ball_uuid, attacker){
         this.x = x;
         this.y = y;
+
         this.is_attacked(angle, damage);
         attacker.destroy_fireball(ball_uuid);
     }

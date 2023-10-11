@@ -64,7 +64,8 @@ class AcGameMenu {
         });
         this.$bgm.click(function(){
             if (!outer.has_bgm){
-                outer.bgm = new Audio('/static/sounds/bgm_menu.mp3');
+                outer.bgm = new Audio('/static/sounds/menu/bgm_menu.mp3');
+                outer.bgm.volume = 0.5;
                 outer.bgm.play();
                 outer.$bgm.text('背景音乐:开');
                 outer.has_bgm = true;

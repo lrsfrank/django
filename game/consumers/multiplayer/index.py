@@ -122,6 +122,15 @@ class MultiPlayer(AsyncWebsocketConsumer):
                 'text': data['text']
             }
         )
+    async def stop_move(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event':"stop_move",
+                'uuid': data['uuid']
+            }
+        )
     async def group_send_event(self, data):
         await self.send(text_data=json.dumps(data))
 
@@ -140,3 +149,5 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.flash(data)
         elif event == "chat":
             await self.chat(data)
+        elif event == "stop_move":
+            await self.stop_move(data)
