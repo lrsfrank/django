@@ -231,7 +231,7 @@ class Player extends AcGameObject {
                 if (outer.playground.mode === "multi mode"){
                     outer.playground.mps.send_shoot_arrow(outer.mouse_x, outer.mouse_y, power, arrow.uuid);
                 }
-                outer.arrow_coldtime = 8;
+                outer.arrow_coldtime = 7;
             }
         });
         this.playground.game_map.$canvas.mousemove(function(e){
@@ -493,7 +493,7 @@ class Player extends AcGameObject {
         }
         //蓄力箭
         x = 1.6, y = 0.9, r = 0.04;
-        if (this.arrow_coldtime === 0){
+        if (this.arrow_coldtime < this.eps){
             this.arrow_cdscale = 7;
         }
         this.ctx.save();
