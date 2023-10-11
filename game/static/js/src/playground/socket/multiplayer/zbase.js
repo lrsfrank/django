@@ -24,6 +24,10 @@ class MultiPlayerSocket {
                 outer.receive_shoot_fireball(uuid, data.tx, data.ty, data.ball_uuid);
             } else if (event === "shoot_arrow"){
                 outer.receive_shoot_arrow(uuid, data.tx, data.ty, data.power, data.arrow_uuid);
+            } else if (event === "arrow_slow_speed"){
+                outer.receive_arrow_slow_speed(uuid, data.speed);
+            } else if (event === "arrow_restore_speed"){
+                outer.receive_arrow_restore_speed(uuid);
             } else if (event === "attack"){
                 outer.receive_attack(uuid, data.attackee_uuid, data.x, data.y, data.angle, data.damage, data.ball_uuid);
             } else if (event === "flash"){
@@ -123,6 +127,35 @@ class MultiPlayerSocket {
         if (player){
             let arrow = player.shoot_arrow(tx, ty, power);
             arrow.uuid = arrow_uuid;
+        }
+    }
+    send_arrow_slow_speed(speed){
+        let outer =this;
+        this.ws.send(JSON.stringify({
+            'event':"arrow_slow_speed",
+            'uuid':outer.uuid,
+            'speed':speed
+        }));
+    }
+    receive_arrow_slow_speed(uuid){
+        let player = this.get_player(uuid);
+        if (player){
+            player.speed = player.speed / 2;
+            player.E_is_down = true;
+        }
+    }
+    send_arrow_restore_speed(){
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event':"arrow_restore_speed",
+            'uuid':outer.uuid
+        }));
+    }
+    receive_arrow_restore_speed(uuid){
+        let player = this.get_player(uuid);
+        if (player){
+            player.speed = player.speed * 2;
+            player.E_is_down = false;
         }
     }
     send_attack(attackee_uuid, x, y, angle, damage, ball_uuid){

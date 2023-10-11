@@ -15,6 +15,7 @@ class Player extends AcGameObject {
         this.radius = radius;
         this.color = color;
         this.origin_speed = speed;
+        this.origin_speed = speed;
         this.speed = speed;
         this.fireball_speed = fireball_speed;
         this.fireballs = [];
@@ -212,7 +213,11 @@ class Player extends AcGameObject {
                 }
                 if (outer.E_is_down === false){
                    outer.E_start_time = new Date().getTime();
+                   outer.speed = outer.speed / 2;
+                   outer.playground.mps.send_arrow_slow_speed(outer.speed);
                 }
+                outer.E_length = (new Date().getTime() - outer.E_start_time) / 1000;
+                outer.E_length = Math.min(3, outer.E_length);
                 outer.E_is_down = true;
             }
             
@@ -220,10 +225,12 @@ class Player extends AcGameObject {
         });
         this.playground.game_map.$canvas.keyup(function(e){
             if (e.which === 69){
-                if (outer.arrow_coldtime > outer.eps){
+                if (outer.arrow_coldtime > outer.eps || outer.E_is_down === false){
                     return true;
                 }
                 outer.E_is_down = false;
+                outer.speed = outer.speed * 2;
+                outer.playground.mps.send_arrow_restore_speed();
                 outer.E_end_time = new Date().getTime();
                 let E_time = (outer.E_end_time - outer.E_start_time) / 1000;
                 let power = Math.min(3, E_time);
@@ -276,7 +283,7 @@ class Player extends AcGameObject {
         let arrow_vy = Math.sin(arrow_angle);
         let arrow_speed = 0.8 + power/3;
         let arrow_move_length = 0.7 + power * 0.2;
-        let arrow_damage = 0.01 + power / 100;
+        let arrow_damage = 0.005 + power / 100;
         let arrow_transparency = 255 - parseInt(50 * power);
         this.arrow = new Arrow(this.playground, this, arrow_x, arrow_y, arrow_radius, arrow_vx, arrow_vy, arrow_speed, arrow_move_length, arrow_damage, arrow_transparency);
         this.arrow_coldtime = 7;
@@ -396,7 +403,6 @@ class Player extends AcGameObject {
         }
         this.update_move();
 
-
         this.render();
 
     }
@@ -438,7 +444,9 @@ class Player extends AcGameObject {
                 this.x += this.vx * moved;
                 this.y += this.vy * moved;
                 this.move_length -= moved;
-                this.speed = this.origin_speed + (this.origin_radius - this.radius) * 10;
+                if (this.E_is_down === false){
+                    this.speed = this.origin_speed + (this.origin_radius - this.radius) * 10;
+                }
             }
         }
 
@@ -463,6 +471,9 @@ class Player extends AcGameObject {
         }
         if (this.character === "me" && this.playground.state === "fighting"){
             this.render_skill_coldtime();
+        }
+        if (this.character === "me"){
+            this.render_skill_animation();
         }
     }
     render_skill_coldtime(){
@@ -531,6 +542,38 @@ class Player extends AcGameObject {
             this.ctx.lineTo(x * scale, y * scale);
             this.ctx.fillStyle = "rgba(0, 0, 255, 0.6)";
             this.ctx.fill();
+        }
+    }
+    render_skill_animation(){
+        let scale = this.playground.scale;
+        if (this.E_is_down){
+
+            let len = 0.06 + this.E_length * 0.03;
+            let angle = Math.atan2(this.mouse_y - this.y, this.mouse_x - this.x);
+            let tx = this.x + len * Math.cos(angle);
+            let ty = this.y + len * Math.sin(angle);
+            this.ctx.save();
+            this.ctx.lineWidth = 3;      // 线条宽度
+            let transparency = 250 - this.E_length * 50;
+            this.ctx.strokeStyle = `rgb(${transparency}, 0, 0)`;   // 线条颜色
+            this.ctx.fillStyle = `rgb(${transparency}, 0, 0)`;  // 填充颜色
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.x * scale, this.y * scale);
+            this.ctx.lineTo(tx * scale, ty * scale);
+            this.ctx.stroke();
+            let arrowSize = 0.02;
+            this.ctx.beginPath();
+            this.ctx.moveTo(tx * scale, ty * scale);
+            var arrow_pointx = tx - arrowSize * Math.cos(angle - Math.PI / 6);
+            var arrow_pointy = ty - arrowSize * Math.sin(angle - Math.PI / 6);
+            this.ctx.lineTo(arrow_pointx * scale, arrow_pointy * scale);
+            var arrow_pointx = tx - arrowSize * Math.cos(angle + Math.PI / 6);
+            var arrow_pointy = ty - arrowSize * Math.sin(angle + Math.PI / 6);
+            this.ctx.lineTo(arrow_pointx * scale, arrow_pointy * scale);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.restore();
         }
     }
     on_destroy() {

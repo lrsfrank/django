@@ -96,6 +96,28 @@ class MultiPlayer(AsyncWebsocketConsumer):
                 'arrow_uuid':data['arrow_uuid']
             }
         )
+    async def arrow_slow_speed(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event': "arrow_slow_speed",
+                'uuid':data['uuid'],
+                'speed':data['speed']
+
+            }
+        )
+    
+    async def arrow_restore_speed(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event': "arrow_restore_speed",
+                'uuid':data['uuid']
+            }
+        )
+    
 
     async def attack(self, data):
         await self.channel_layer.group_send(
@@ -158,6 +180,10 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.shoot_fireball(data)
         elif event == "shoot_arrow":
             await self.shoot_arrow(data)
+        elif event == "arrow_slow_speed":
+            await self.arrow_slow_speed(data)
+        elif event == "arrow_restore_speed":
+            await self.arrow_restore_speed(data)
         elif event == "attack":
             await self.attack(data)
         elif event == "flash":
