@@ -47,7 +47,10 @@ class Player extends AcGameObject {
             this.flash_img = new Image();
             this.flash_img.src = "https://cdn.acwing.com/media/article/image/2021/12/02/1_daccabdc53-blink.png";
 
-            this.arrow_coldtime = 0;
+            this.arrow_coldtime = 3;
+            this.arrow_cdscale = 3;
+            this.arrow_img = new Image();
+            this.arrow_img.src = "https://s3.bmp.ovh/imgs/2023/10/11/f3440f0d11537123.png";
             this.E_is_down = false;
 
         }
@@ -217,11 +220,18 @@ class Player extends AcGameObject {
         });
         this.playground.game_map.$canvas.keyup(function(e){
             if (e.which === 69){
+                if (outer.arrow_coldtime > outer.eps){
+                    return true;
+                }
                 outer.E_is_down = false;
                 outer.E_end_time = new Date().getTime();
                 let E_time = (outer.E_end_time - outer.E_start_time) / 1000;
                 let power = Math.min(3, E_time);
-                outer.shoot_arrow(outer.mouse_x, outer.mouse_y, power);
+                let arrow = outer.shoot_arrow(outer.mouse_x, outer.mouse_y, power);
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_shoot_arrow(outer.mouse_x, outer.mouse_y, power, arrow.uuid);
+                }
+                outer.arrow_coldtime = 8;
             }
         });
         this.playground.game_map.$canvas.mousemove(function(e){
@@ -269,7 +279,7 @@ class Player extends AcGameObject {
         let arrow_damage = 0.01 + power / 100;
         let arrow_transparency = 255 - parseInt(50 * power);
         this.arrow = new Arrow(this.playground, this, arrow_x, arrow_y, arrow_radius, arrow_vx, arrow_vy, arrow_speed, arrow_move_length, arrow_damage, arrow_transparency);
-        this.arrow_coldtime = 0;
+        this.arrow_coldtime = 7;
 
         //var audio = new Audio('/static/sounds/playground/shoot.wav');
         //audio.play();
@@ -373,9 +383,10 @@ class Player extends AcGameObject {
     receive_attack(x, y, angle, damage, ball_uuid, attacker){
         this.x = x;
         this.y = y;
-
         this.is_attacked(angle, damage);
-        attacker.destroy_fireball(ball_uuid);
+        if (damage === this.fireball_damage){
+            attacker.destroy_fireball(ball_uuid);
+        }
     }
     update(){
         this.stamp_time += this.timedelta;
@@ -393,8 +404,13 @@ class Player extends AcGameObject {
         this.fireball_coldtime -= this.timedelta / 1000;
         this.fireball_coldtime = Math.max(this.fireball_coldtime, 0);
 
+        this.arrow_coldtime -= this.timedelta / 1000;
+        this.arrow_coldtime = Math.max(this.arrow_coldtime, 0);
+
         this.flash_coldtime -= this.timedelta / 1000;
         this.flash_coldtime = Math.max(this.flash_coldtime, 0);
+
+        
     }
     update_move(){
         if (this.character === "bot"){
@@ -475,9 +491,30 @@ class Player extends AcGameObject {
             this.ctx.fillStyle = "rgba(0, 0, 255, 0.6)";
             this.ctx.fill();
         }
+        //蓄力箭
+        x = 1.6, y = 0.9, r = 0.04;
+        if (this.arrow_coldtime === 0){
+            this.arrow_cdscale = 7;
+        }
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x*scale, y * scale, r * scale, 0, Math.PI*2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.arrow_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale); 
+        this.ctx.restore();
 
+        this.ctx.beginPath();
+        if (this.arrow_coldtime > 0){
+
+            this.ctx.moveTo(x * scale, y * scale);
+            this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2, Math.PI*2 * (1 - this.arrow_coldtime / this.arrow_cdscale) - Math.PI / 2, true);
+            this.ctx.lineTo(x * scale, y * scale);
+            this.ctx.fillStyle = "rgba(0, 0, 255, 0.6)";
+            this.ctx.fill();
+        }
         //闪现
-        x = 1.62, y = 0.9, r = 0.04;
+        x = 1.7, y = 0.9, r = 0.04;
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
