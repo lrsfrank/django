@@ -19,7 +19,8 @@ class Player extends AcGameObject {
         this.speed = speed;
         this.fireball_speed = fireball_speed;
         this.fireballs = [];
-        //this.arrow;
+        this.E_is_down = false;//   不设置的话，只有自己才有这个属性，在E技能按下时广播减速信息会出错，因为对方角色没有这个属性，所以不会随着变小而加速
+        this.arrow;
         this.character = character;
         this.eps = 0.01;
         this.move_length = 0;
@@ -27,7 +28,7 @@ class Player extends AcGameObject {
         this.cur_skill = [false, false]; //0是fireball, 1是flash
         this.username = username;
         this.photo = photo;
-
+        
 
         this.keys = [];
 
@@ -214,14 +215,16 @@ class Player extends AcGameObject {
                 if (outer.E_is_down === false){
                    outer.E_start_time = new Date().getTime();
                    outer.speed = outer.speed / 2;
-                   outer.playground.mps.send_arrow_slow_speed(outer.speed);
+                    if (outer.playground.mode === "multi mode"){
+                        outer.playground.mps.send_arrow_slow_speed(outer.speed);
+                    }
                 }
                 outer.E_length = (new Date().getTime() - outer.E_start_time) / 1000;
                 outer.E_length = Math.min(3, outer.E_length);
                 outer.E_is_down = true;
             }
-            
-            
+
+
         });
         this.playground.game_map.$canvas.keyup(function(e){
             if (e.which === 69){
@@ -230,13 +233,15 @@ class Player extends AcGameObject {
                 }
                 outer.E_is_down = false;
                 outer.speed = outer.speed * 2;
-                outer.playground.mps.send_arrow_restore_speed();
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.mps.send_arrow_restore_speed();
+                }
                 outer.E_end_time = new Date().getTime();
                 let E_time = (outer.E_end_time - outer.E_start_time) / 1000;
                 let power = Math.min(3, E_time);
-                let arrow = outer.shoot_arrow(outer.mouse_x, outer.mouse_y, power);
+                outer.arrow = outer.shoot_arrow(outer.mouse_x, outer.mouse_y, power);
                 if (outer.playground.mode === "multi mode"){
-                    outer.playground.mps.send_shoot_arrow(outer.mouse_x, outer.mouse_y, power, arrow.uuid);
+                    outer.playground.mps.send_shoot_arrow(outer.mouse_x, outer.mouse_y, power, outer.arrow.uuid);
                 }
                 outer.arrow_coldtime = 7;
             }
@@ -274,6 +279,7 @@ class Player extends AcGameObject {
                 break;
             }
         }
+        this.arrow.destory();
     }
     shoot_arrow(tx, ty, power){
         let arrow_x = this.x, arrow_y = this.y;
@@ -391,9 +397,7 @@ class Player extends AcGameObject {
         this.x = x;
         this.y = y;
         this.is_attacked(angle, damage);
-        if (damage === this.fireball_damage){
-            attacker.destroy_fireball(ball_uuid);
-        }
+        attacker.destroy_fireball(ball_uuid);
     }
     update(){
         this.stamp_time += this.timedelta;
@@ -416,7 +420,7 @@ class Player extends AcGameObject {
         this.flash_coldtime -= this.timedelta / 1000;
         this.flash_coldtime = Math.max(this.flash_coldtime, 0);
 
-        
+
     }
     update_move(){
         if (this.character === "bot"){
