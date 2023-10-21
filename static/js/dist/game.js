@@ -852,7 +852,7 @@ class Player extends AcGameObject {
         if (this.character === "me" && this.playground.state === "fighting"){
             this.render_skill_coldtime();
         }
-        if (this.character === "me"){
+        if (this.character !== "bot"){
             this.render_skill_animation();
         }
     }
@@ -944,7 +944,7 @@ class Player extends AcGameObject {
     }
     render_skill_animation(){
         let scale = this.playground.scale;
-        if (this.E_is_down){
+        if (this.character === "me" && this.E_is_down){
 
             let len = 0.06 + this.E_length * 0.03;
             let angle = Math.atan2(this.mouse_y - this.y, this.mouse_x - this.x);
