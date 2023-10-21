@@ -3,12 +3,18 @@ class ChatField {
         this.playground = playground;
         this.$history = $(`<div class="ac-game-chat-field-history">历史记录</div>`);
         this.$input = $(`<input type="text" class="ac-game-chat-field-input">`);
-
+        this.$introduction = $(`<div class="ac-game-introduction">
+            鼠标右键:朝点击位置移动<br>
+            Q:向鼠标位置发射火球 CD:3s<br>
+            E:按住蓄力，释放后朝鼠标位置发射迅箭，最长可蓄力3秒 CD:7s<br>
+            F:朝鼠标位置瞬间移动一段距离 CD:10s<br>
+            S:停止移动<br>
+            </div>`)
         this.$history.hide();
         this.$input.hide();
         this.playground.$playground.append(this.$history);
         this.playground.$playground.append(this.$input);
-
+        //this.playground.root.$ac_game.append(this.$introduction);
         this.func_id = null;
 
         this.start();

@@ -32,6 +32,8 @@ class MultiPlayerSocket {
                 outer.receive_attack(uuid, data.attackee_uuid, data.x, data.y, data.angle, data.damage, data.ball_uuid);
             } else if (event === "flash"){
                 outer.receive_flash(uuid, data.tx, data.ty);
+            } else if (event === "quick_move"){
+                outer.receive_quick_move(uuid);
             } else if (event === "chat"){
                 outer.receive_chat(data.username, data.text);
             } else if (event === "stop_move"){
@@ -194,7 +196,21 @@ class MultiPlayerSocket {
             player.flash(tx, ty);
         }
     }
-
+    
+    send_quick_move(){
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "quick_move",
+            'uuid':outer.uuid
+        }));
+    }
+    
+    receive_quick_move(uuid){
+        let player = this.get_player(uuid);
+        if (player){
+            player.quick_move();
+        }
+    }
     send_chat(username, text){
         let outer = this;
         this.ws.send(JSON.stringify({

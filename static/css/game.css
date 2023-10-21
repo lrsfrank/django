@@ -225,6 +225,15 @@
 
     background-color: rgba(222,225,230, 0.2);
 }
-
+.ac-game-introduction{
+    position: absolute;
+    top: 10%;
+    left:70%;
+    width:10%;
+    height:100%;
+    color:lightgreen;
+    font-size:2vh;
+    user-select:none;
+}
 
 

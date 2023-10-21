@@ -146,6 +146,15 @@ class MultiPlayer(AsyncWebsocketConsumer):
                 'ty':data['ty']
             }
         )
+    async def quick_move(self, data):
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type':"group_send_event",
+                'event':"quick_move",
+                'uuid':data['uuid']
+            }
+            )
     async def chat(self, data):
         await self.channel_layer.group_send(
             self.room_name,
@@ -188,6 +197,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.attack(data)
         elif event == "flash":
             await self.flash(data)
+        elif event == "quick_move":
+            await self.quick_move(data)
         elif event == "chat":
             await self.chat(data)
         elif event == "stop_move":
